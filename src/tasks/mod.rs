@@ -5,10 +5,7 @@ use axum::{
     Json,
 };
 use serde_json::json;
-use sqlx::{
-    query, query_as,
-    sqlite::SqlitePool,
-};
+use sqlx::{query, query_as, sqlite::SqlitePool};
 use task_manager_sql::{CreateTaskReq, Tasks, UpdateTaskReq};
 
 pub async fn get_tasks(
@@ -135,6 +132,24 @@ pub async fn update_task(
     Ok((StatusCode::OK, Json(json!({"success": true}))))
 }
 
-pub async fn delete_task() {
-    todo!()
+pub async fn delete_task(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+) -> Result<impl IntoResponse, Response> {
+    
+    query!("DELETE FROM tasks WHERE id = ?", id)
+        .execute(&pool)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::BAD_REQUEST,
+                Json(json!({
+                    "success": false,
+                    "error": e.to_string()
+                })),
+            )
+                .into_response()
+        })?;
+
+    Ok((StatusCode::OK, Json(json!({"success": true}))))
 }
