@@ -2,11 +2,13 @@ mod tasks;
 
 use std::{env, net::SocketAddr};
 
-use axum::{routing::{get, patch, delete, post}, Router};
+use axum::{
+    routing::{get, patch},
+    Router,
+};
 use sqlx::sqlite::SqlitePoolOptions;
 
 use tasks::{create_task, delete_task, get_tasks, update_task};
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,9 +17,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     let pool = SqlitePoolOptions::new()
         .connect(&db_url)
-        .await 
+        .await
         .expect("Failed to connect to the DB.");
-    
+
     sqlx::migrate!("./migrations").run(&pool).await?;
 
     let app = Router::new()
